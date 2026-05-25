@@ -37,3 +37,4 @@ coverage/
 
 # Docker volumes
 constell_*/
+*.tsbuildinfo
