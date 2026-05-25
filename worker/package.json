@@ -9,6 +9,7 @@
     "dev": "tsx watch src/app.ts",
     "lint": "echo 'lint: skip (no eslint config yet)'",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "start": "node dist/app.js"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.7"
   }
 }
