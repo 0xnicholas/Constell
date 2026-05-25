@@ -1,0 +1,2 @@
+// Validated environment schema
+export {};

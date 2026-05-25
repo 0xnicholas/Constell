@@ -1,0 +1,45 @@
+{
+  "name": "@constell/shared",
+  "version": "0.1.0-alpha",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./src/server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    },
+    "./src/db": {
+      "types": "./dist/db.d.ts",
+      "default": "./dist/db.js"
+    },
+    "./src/env": {
+      "types": "./dist/env.d.ts",
+      "default": "./dist/env.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "echo 'lint: skip (no eslint config yet)'",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset --force",
+    "ch:reset": "echo 'ClickHouse reset: placeholder'",
+    "db:seed:examples": "echo 'Seed: placeholder'"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "prisma": "^6.6.0",
+    "typescript": "^5.8.0"
+  }
+}
