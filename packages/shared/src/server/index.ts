@@ -8,4 +8,4 @@ export type {
   QueueJobMap,
 } from "./queues.js";
 
-export { clickhouse, pingClickHouse } from "./clickhouse/client.js";
+export { getClickHouseClient, pingClickHouse } from "./clickhouse/client.js";

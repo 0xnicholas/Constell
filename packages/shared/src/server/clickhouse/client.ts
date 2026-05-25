@@ -1,19 +1,29 @@
-import { createClient } from "@clickhouse/client";
-import { parseEnv } from "../../env.js";
+import { createClient, type ClickHouseClient } from "@clickhouse/client";
+import { parseEnv, type Env } from "../../env.js";
 
-const env = parseEnv(process.env);
+let _client: ClickHouseClient | null = null;
 
-export const clickhouse = createClient({
-  url: env.CLICKHOUSE_URL,
-  username: env.CLICKHOUSE_USER,
-  password: env.CLICKHOUSE_PASSWORD,
-  request_timeout: 30000,
-  max_open_connections: 10,
-});
+function createClickHouseClient(env: Env): ClickHouseClient {
+  return createClient({
+    url: env.CLICKHOUSE_URL,
+    username: env.CLICKHOUSE_USER,
+    password: env.CLICKHOUSE_PASSWORD,
+    request_timeout: 30000,
+    max_open_connections: 10,
+  });
+}
+
+export function getClickHouseClient(): ClickHouseClient {
+  if (!_client) {
+    const env = parseEnv(process.env);
+    _client = createClickHouseClient(env);
+  }
+  return _client;
+}
 
 export async function pingClickHouse(): Promise<boolean> {
   try {
-    const result = await clickhouse.ping();
+    const result = await getClickHouseClient().ping();
     return result.success;
   } catch {
     return false;

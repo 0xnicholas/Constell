@@ -19,10 +19,15 @@ export interface IngestionJob {
   apiKeyId: string;
 }
 
+/**
+ * Payload must be base64-encoded before enqueue since BullMQ serializes
+ * via JSON.stringify. The worker consumer should decode with
+ * `Buffer.from(payload, "base64")`.
+ */
 export interface BlobStorageJob {
   key: string;
   bucket: string;
-  payload: Buffer;
+  payload: string; // base64-encoded
 }
 
 export interface PromptCacheJob {

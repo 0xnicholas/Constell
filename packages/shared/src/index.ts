@@ -9,5 +9,3 @@ export {
 } from "./errors/index.js";
 
 export type { Env } from "./env.js";
-
-export { hashSecret, compareSecret } from "./encryption/index.js";
