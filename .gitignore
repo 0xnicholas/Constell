@@ -1,0 +1,39 @@
+.DS_Store
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+.next-check/
+dist/
+build/
+out/
+
+# Generated
+packages/shared/prisma/generated/
+generated/
+
+# Environment
+.env
+.env.*.local
+!.env.dev.example
+!.env.production.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Test
+.playwright-mcp/
+coverage/
+
+# Docker volumes
+constell_*/
