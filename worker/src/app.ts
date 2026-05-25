@@ -56,16 +56,15 @@ const server = app.listen(PORT, () => {
   console.log(`Worker listening on port ${PORT}`);
 });
 
-const workers = createBullMQWorkers();
+const workerManager = createBullMQWorkers();
 
 async function shutdown(signal: string) {
   console.log(`Received ${signal}. Shutting down gracefully...`);
-  server.close(async () => {
-    await closeWorkers(workers);
-    await prisma.$disconnect();
-    console.log("Cleanup complete. Exiting.");
-    process.exit(0);
-  });
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+  await closeWorkers(workerManager);
+  await prisma.$disconnect();
+  console.log("Cleanup complete. Exiting.");
+  process.exit(0);
 }
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));

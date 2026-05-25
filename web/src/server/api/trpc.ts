@@ -44,6 +44,11 @@ export const createTRPCRouter = t.router;
 
 /**
  * Middleware that enforces authentication (session OR API key).
+ *
+ * TODO(v0.3.0): When session auth is used (UI login), `projectId` must be
+ * resolved from the user's active organization/project. For now, tRPC is only
+ * consumed by API-key-authenticated callers (SDK), so `projectId` comes from
+ * the API key.
  */
 export const authedProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.session && !ctx.apiKey) {
@@ -52,7 +57,7 @@ export const authedProcedure = t.procedure.use(({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      // Normalize projectId from whichever auth mechanism succeeded
+      // projectId from API key; session-based resolution pending login UI
       projectId: ctx.apiKey?.projectId ?? null,
     },
   });

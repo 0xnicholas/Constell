@@ -1,6 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
 import { validateApiKey } from "~/features/public-api/server/apiKeyAuth";
 import { BaseError } from "@constell/shared";
+import { queueNames, type IngestionJob } from "@constell/shared/src/server";
+
+const redis = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: Number(process.env.REDIS_PORT) || 6379,
+  password: process.env.REDIS_AUTH,
+  maxRetriesPerRequest: null,
+});
+
+const ingestionQueue = new Queue<IngestionJob>(queueNames.ingestion, {
+  connection: redis,
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -9,13 +23,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { projectId } = await validateApiKey(req.headers.authorization);
+    const { projectId, apiKeyId } = await validateApiKey(req.headers.authorization);
 
-    // Placeholder: v0.3.0 will implement deep validation + queue enqueue
+    const batch = Array.isArray(req.body?.batch) ? req.body.batch : [req.body];
+
+    const job = await ingestionQueue.add(
+      "ingest-batch",
+      {
+        batch,
+        projectId,
+        apiKeyId,
+      },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 1000 },
+      }
+    );
+
     return res.status(202).json({
-      batchId: `batch_${Date.now()}`,
+      batchId: job.id,
       projectId,
-      message: "Accepted (placeholder)",
     });
   } catch (err) {
     if (err instanceof BaseError) {
