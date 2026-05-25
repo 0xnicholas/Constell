@@ -7,4 +7,201 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models will be added in v0.2.0
+// ─── Auth & Identity ───
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  memberships   Membership[]
+  apiKeys       ApiKey[]
+  createdAt     DateTime  @default(now())
+}
+
+// ─── Organization & Project ───
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  projects    Project[]
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MembershipRole @default(OWNER)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Project {
+  id             String       @id @default(cuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  apiKeys        ApiKey[]
+  traces         Trace[]
+  prompts        Prompt[]
+  createdAt      DateTime     @default(now())
+}
+
+// ─── API Authentication ───
+model ApiKey {
+  id              String    @id @default(cuid())
+  publicKey       String    @unique
+  hashedSecretKey String
+  displayName     String?
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+}
+
+// ─── Tracing Metadata ───
+model Trace {
+  id          String        @id @default(cuid())
+  externalId  String?
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String?
+  userId      String?
+  sessionId   String?
+  metadata    Json?
+  release     String?
+  version     String?
+  tags        String[]
+  bookmarked  Boolean       @default(false)
+  public      Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  totalTokens Int?
+  totalCost   Decimal?      @db.Decimal(65, 30)
+  latencyMs   Int?
+
+  observations Observation[]
+
+  @@unique([projectId, externalId])
+  @@index([projectId, createdAt])
+  @@index([projectId, sessionId])
+  @@index([projectId, userId])
+}
+
+model Observation {
+  id                  String   @id @default(cuid())
+  traceId             String
+  trace               Trace    @relation(fields: [traceId], references: [id], onDelete: Cascade)
+  projectId           String
+  type                String
+  name                String?
+  startTime           DateTime?
+  endTime             DateTime?
+  model               String?
+  input               String?  @db.Text
+  output              String?  @db.Text
+  inputTokens         Int?
+  outputTokens        Int?
+  totalTokens         Int?
+  calculatedCost      Decimal? @db.Decimal(65, 30)
+  level               String   @default("DEFAULT")
+  statusMessage       String?
+  metadata            Json?
+  parentObservationId String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([projectId, traceId])
+  @@index([projectId, createdAt])
+}
+
+// ─── Model Pricing ───
+model ModelPrice {
+  id            String    @id @default(cuid())
+  model         String    @unique
+  inputPrice    Decimal   @db.Decimal(65, 30)
+  outputPrice   Decimal   @db.Decimal(65, 30)
+  currency      String    @default("USD")
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ─── Prompt Management ───
+model Prompt {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  versions    PromptVersion[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([projectId, name])
+}
+
+model PromptVersion {
+  id          String   @id @default(cuid())
+  promptId    String
+  prompt      Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  version     Int
+  content     String   @db.Text
+  config      Json?
+  labels      PromptVersionLabel[]
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  @@unique([promptId, version])
+}
+
+model PromptVersionLabel {
+  id              String        @id @default(cuid())
+  promptVersionId String
+  label           String
+  promptVersion   PromptVersion @relation(fields: [promptVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([promptVersionId, label])
+}
