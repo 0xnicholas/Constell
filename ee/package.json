@@ -1,0 +1,20 @@
+{
+  "name": "@constell/ee",
+  "version": "0.1.0-alpha",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "echo 'lint: skip (no eslint config yet)'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@constell/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^5.8.0"
+  }
+}
