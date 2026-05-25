@@ -1,14 +1,19 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth";
 import { validateApiKey } from "~/features/public-api/server/apiKeyAuth";
 
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req } = opts;
+  const { req, res } = opts;
 
-  // API key auth for programmatic access
+  // Try session auth first
+  const session = await getServerSession(req, res, authOptions);
+
+  // Fall back to API key auth for programmatic access
   let apiKey: { projectId: string; apiKeyId: string } | null = null;
-  if (req.headers.authorization) {
+  if (!session && req.headers.authorization) {
     try {
       apiKey = await validateApiKey(req.headers.authorization);
     } catch {
@@ -17,6 +22,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   }
 
   return {
+    session,
     apiKey,
   };
 };
@@ -37,17 +43,17 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 export const createTRPCRouter = t.router;
 
 /**
- * Middleware that enforces API key authentication.
- * Session auth will be added when the login UI is built (v0.3+).
+ * Middleware that enforces authentication (session OR API key).
  */
 export const authedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.apiKey) {
+  if (!ctx.session && !ctx.apiKey) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
     ctx: {
       ...ctx,
-      projectId: ctx.apiKey.projectId,
+      // Normalize projectId from whichever auth mechanism succeeded
+      projectId: ctx.apiKey?.projectId ?? null,
     },
   });
 });
