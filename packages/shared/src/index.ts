@@ -1,2 +1,13 @@
 // Frontend-safe exports: types, schemas, constants
-export {};
+export {
+  BaseError,
+  ValidationError,
+  AuthenticationError,
+  AuthorizationError,
+  NotFoundError,
+  ConflictError,
+} from "./errors/index.js";
+
+export type { Env } from "./env.js";
+
+export { hashSecret, compareSecret } from "./encryption/index.js";
