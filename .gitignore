@@ -1,4 +1,5 @@
 .DS_Store
+_references/
 
 # Dependencies
 node_modules/
@@ -38,3 +39,6 @@ coverage/
 # Docker volumes
 constell_*/
 *.tsbuildinfo
+
+# Worktrees
+.worktrees/
