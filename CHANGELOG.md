@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Trace Query & UI**
+  - tRPC `traces` router: `list` (ClickHouse `traces_wide`) and `detail` (PostgreSQL + observations)
+  - Trace list page (`/traces`) with time range filter and offset pagination
+  - Trace detail page (`/traces/[id]`) with observation span tree, input/output preview
+  - tRPC Next.js client (`web/src/utils/api.ts`) with superjson transformer
+- **Rate Limiting**
+  - Fixed-window counter rate limiter (1000 events/min per API key) backed by Redis
+  - Returns `429` with `retryAfter` when exceeded
+- **SDKs**
+  - Python SDK (`sdk/python/`): `ConstellClient`, `Trace`, `Observation`, `Usage`
+  - TypeScript SDK (`sdk/typescript/`): same surface, native `fetch`, batch flush loop
+
 ## [0.3.0-alpha] - 2026-05-26
 
 ### Added
