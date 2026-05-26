@@ -2,18 +2,20 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { api } from "~/utils/api";
 import { SpanTree } from "~/features/traces/components/SpanTree";
+import { useActiveProject } from "~/features/projects/hooks/useActiveProject";
 
 export default function TraceDetailPage() {
   const router = useRouter();
   const { id } = router.query as { id?: string };
-  const projectId = "dev-project"; // TODO: resolve from session or URL
+  const { projectId, isLoading: projectLoading } = useActiveProject();
 
   const { data, isLoading } = api.traces.detail.useQuery(
-    { projectId, traceId: id || "" },
-    { enabled: !!id }
+    { projectId: projectId || "", traceId: id || "" },
+    { enabled: !!id && !!projectId }
   );
 
-  if (isLoading) return <div className="p-6">Loading…</div>;
+  if (projectLoading || isLoading) return <div className="p-6">Loading…</div>;
+  if (!projectId) return <div className="p-6">No project selected.</div>;
   if (!data?.trace) return <div className="p-6">Trace not found.</div>;
 
   const trace = data.trace;
