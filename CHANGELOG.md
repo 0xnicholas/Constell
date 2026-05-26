@@ -7,20 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **Trace Query & UI**
-  - tRPC `traces` router: `list` (ClickHouse `traces_wide`) and `detail` (PostgreSQL + observations)
-  - Trace list page (`/traces`) with time range filter and offset pagination
-  - Trace detail page (`/traces/[id]`) with observation span tree, input/output preview
-  - tRPC Next.js client (`web/src/utils/api.ts`) with superjson transformer
-- **Rate Limiting**
-  - Fixed-window counter rate limiter (1000 events/min per API key) backed by Redis
-  - Returns `429` with `retryAfter` when exceeded
-- **SDKs**
-  - Python SDK (`sdk/python/`): `ConstellClient`, `Trace`, `Observation`, `Usage`
-  - TypeScript SDK (`sdk/typescript/`): same surface, native `fetch`, batch flush loop
-
 ## [0.3.0-alpha] - 2026-05-26
 
 ### Added
@@ -48,6 +34,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Worker ingestion worker now uses real `processIngestionJob` instead of placeholder
 - `@constell/shared/src/server` barrel exports ingestion modules
+
+- **Trace Query & UI (Phase B)**
+  - tRPC `traces` router: `list` (ClickHouse `traces_wide`) and `detail` (PostgreSQL + observations)
+  - Trace list page (`/traces`) with time range filter and offset pagination
+  - Trace detail page (`/traces/[id]`) with observation span tree, input/output preview
+  - tRPC Next.js client (`web/src/utils/api.ts`) with superjson transformer
+
+- **Rate Limiting (Phase B)**
+  - Fixed-window counter rate limiter (1000 events/min per API key) backed by Redis
+  - Returns `429` with `retryAfter` when exceeded
+
+- **SDKs (Phase B)**
+  - Python SDK (`sdk/python/`): `ConstellClient`, `Trace`, `Observation`, `Usage`
+  - TypeScript SDK (`sdk/typescript/`): same surface, native `fetch`, batch flush loop
+
+- **Session & Project Resolution (Phase C)**
+  - NextAuth JWT callback enriches session with user's first `projectId`
+  - tRPC context resolves `projectId` from session or API key
+  - `useActiveProject` hook for session / URL query param fallback
+  - Trace list/detail pages use real `projectId` instead of hardcoded value
+
+- **E2E Verification (Phase C)**
+  - `scripts/e2e-smoke.ts` — manual smoke test: SDK → ingestion → worker → tRPC → UI
+
+### Fixed
+
+- Worker trace aggregate computation now writes real values (total tokens, cost, latency) instead of zeros
+- SSR `useSession` undefined handling in trace pages
 
 ## [0.2.0-alpha] - 2026-05-26
 

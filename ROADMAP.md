@@ -160,6 +160,6 @@ Client SDK ──► web (Next.js, port 3000) ──► Redis (BullMQ) ──►
 
 ## Current Status
 
-**Spec**: `v0.2.0 Reviewed` — see `docs/specs/2026-05-25-constell-architecture-design.md`
+**Released**: `v0.3.0-alpha` — Tracing end-to-end (SDK → Ingestion → Worker → UI) is complete.
 
-**Next**: Write implementation plan for **v0.1.0-alpha (Skeleton)**.
+**Next**: Implement **v0.4.0-alpha — Prompt Management**. See `docs/superpowers/plans/` for upcoming plans.
