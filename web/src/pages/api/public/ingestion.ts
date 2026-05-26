@@ -3,7 +3,7 @@ import { Queue } from "bullmq";
 import Redis from "ioredis";
 import { validateApiKey } from "~/features/public-api/server/apiKeyAuth";
 import { BaseError } from "@constell/shared";
-import { queueNames, type IngestionJob } from "@constell/shared/src/server";
+import { queueNames, type IngestionJob, ingestionBatchSchema } from "@constell/shared/src/server";
 
 let _queue: Queue<IngestionJob> | null = null;
 
@@ -33,13 +33,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { projectId, apiKeyId } = await validateApiKey(req.headers.authorization);
 
-    const batch = Array.isArray(req.body?.batch) ? req.body.batch : [req.body];
+    const parsed = ingestionBatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: "VALIDATION_ERROR",
+        message: "Invalid batch format",
+        details: parsed.error.flatten(),
+      });
+    }
 
     const queue = getIngestionQueue();
     const job = await queue.add(
       "ingest-batch",
       {
-        batch,
+        batch: parsed.data.batch,
         projectId,
         apiKeyId,
       },
