@@ -5,16 +5,24 @@ import { validateApiKey } from "~/features/public-api/server/apiKeyAuth";
 import { BaseError } from "@constell/shared";
 import { queueNames, type IngestionJob } from "@constell/shared/src/server";
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: Number(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_AUTH,
-  maxRetriesPerRequest: null,
-});
+let _queue: Queue<IngestionJob> | null = null;
 
-const ingestionQueue = new Queue<IngestionJob>(queueNames.ingestion, {
-  connection: redis,
-});
+function getIngestionQueue(): Queue<IngestionJob> {
+  if (!_queue) {
+    const redis = new Redis({
+      host: process.env.REDIS_HOST || "localhost",
+      port: Number(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_AUTH,
+      maxRetriesPerRequest: null,
+      connectTimeout: 5000,
+      lazyConnect: true,
+    });
+    _queue = new Queue<IngestionJob>(queueNames.ingestion, {
+      connection: redis,
+    });
+  }
+  return _queue;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -27,7 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const batch = Array.isArray(req.body?.batch) ? req.body.batch : [req.body];
 
-    const job = await ingestionQueue.add(
+    const queue = getIngestionQueue();
+    const job = await queue.add(
       "ingest-batch",
       {
         batch,
