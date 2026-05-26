@@ -4,6 +4,20 @@ import { authedProcedure, createTRPCRouter } from "../trpc";
 import { getClickHouseClient } from "@constell/shared/src/server";
 import { prisma } from "@constell/shared/src/db";
 
+interface TraceRow {
+  id: string;
+  user_id?: string | null;
+  session_id?: string | null;
+  release?: string | null;
+  version?: string | null;
+  total_tokens?: number;
+  total_cost?: string;
+  latency_ms?: number;
+  observation_count?: number;
+  has_error?: number;
+  created_at?: string;
+}
+
 export const tracesRouter = createTRPCRouter({
   list: authedProcedure
     .input(
@@ -66,7 +80,7 @@ export const tracesRouter = createTRPCRouter({
         query_params: queryParams,
         format: "JSONEachRow",
       });
-      const rows = await resultSet.json<unknown[]>();
+      const rows = (await resultSet.json()) as TraceRow[];
 
       return { traces: rows, limit, offset };
     }),
