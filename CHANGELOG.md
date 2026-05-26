@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0-alpha] - 2026-05-26
+
+### Added
+
+- **Ingestion Pipeline**
+  - Langfuse-style event batch schema: `trace-create`, `observation-create` with Zod validation
+  - Deep validation with cross-reference checks (observation → trace)
+  - Event enrichment: latency calculation, token aggregation, timestamp normalization
+  - Worker ingestion processor: 6-phase pipeline (validate → dedupe → cross-ref → enrich → PG → CH)
+  - Cost calculator: `ModelPrice` lookup with per-token cost computation
+  - ClickHouse batch writer: buffered `JSONEachRow` insert for `traces_wide` + `observations_wide`
+  - Failure handling: per-event skip + report, batch continues on partial failure
+
+- **Shared Ingestion Contracts**
+  - `packages/shared/src/server/ingestion/types.ts` — Event types + `ProcessingFailure`
+  - `packages/shared/src/server/ingestion/schemas.ts` — Zod schemas with 7 unit tests
+  - `packages/shared/src/server/ingestion/validation.ts` — Shallow + cross-reference validation with 5 tests
+  - `packages/shared/src/server/ingestion/enrichment.ts` — Latency/token/timestamp enrichment with 3 tests
+
+- **Web Ingestion API**
+  - Shallow batch validation using shared Zod schema before enqueue
+  - Returns `400` with validation details on malformed batch
+
+### Changed
+
+- Worker ingestion worker now uses real `processIngestionJob` instead of placeholder
+- `@constell/shared/src/server` barrel exports ingestion modules
+
 ## [0.2.0-alpha] - 2026-05-26
 
 ### Added
