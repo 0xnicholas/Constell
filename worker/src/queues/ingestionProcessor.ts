@@ -135,7 +135,7 @@ async function loadExistingTraceIds(
     select: { id: true },
   });
 
-  return new Set(existing.map((t) => t.id));
+  return new Set(existing.map((t: { id: string }) => t.id));
 }
 
 async function writeToPostgres(
