@@ -3,6 +3,7 @@ packages:
   - "web"
   - "worker"
   - "ee"
+  - "sdk/*"
 allowBuilds:
   "@prisma/client": true
   "@prisma/engines": true
