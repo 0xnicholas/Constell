@@ -47,7 +47,7 @@ export const ingestionEventSchema = z.object({
   id: z.string().min(1),
   type: z.enum(["trace-create", "observation-create"]),
   timestamp: z.string().datetime(),
-  body: z.union([traceCreateBodySchema, observationCreateBodySchema]),
+  body: z.union([observationCreateBodySchema, traceCreateBodySchema]),
 });
 
 export const ingestionBatchSchema = z.object({

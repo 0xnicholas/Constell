@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS observations_wide (
-    id UUID,
-    trace_id UUID,
-    project_id UUID,
+    id String,
+    trace_id String,
+    project_id String,
     type String,
     name String,
     start_time DateTime64(3),
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS observations_wide (
     session_id String,
     user_id String,
     metadata String,
-    parent_observation_id Nullable(UUID),
+    parent_observation_id Nullable(String),
     event_ts DateTime64(3),
     ingested_at DateTime64(3) DEFAULT now(),
     INDEX idx_trace_id trace_id TYPE bloom_filter GRANULARITY 3,
@@ -35,8 +35,8 @@ ORDER BY (project_id, toDate(ingested_at), trace_id, start_time, id)
 TTL ingested_at + INTERVAL 90 DAY;
 
 CREATE TABLE IF NOT EXISTS traces_wide (
-    id UUID,
-    project_id UUID,
+    id String,
+    project_id String,
     user_id Nullable(String),
     session_id Nullable(String),
     release Nullable(String),
