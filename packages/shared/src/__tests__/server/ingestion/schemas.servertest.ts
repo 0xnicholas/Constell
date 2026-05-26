@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
   ingestionBatchSchema,
-  ingestionEventSchema,
   observationCreateBodySchema,
   traceCreateBodySchema,
 } from "../../../server/ingestion/schemas.js";

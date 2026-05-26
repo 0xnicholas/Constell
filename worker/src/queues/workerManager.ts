@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 import { queueNames, type QueueJobMap } from "@constell/shared/src/server";
+import { processIngestionJob } from "./ingestionProcessor.js";
 
 export interface WorkerManager {
   workers: Worker[];
@@ -21,7 +22,7 @@ export function createBullMQWorkers(): WorkerManager {
     queueNames.ingestion,
     async (job) => {
       console.log(`[ingestion] Processing job ${job.id}`, job.data.projectId);
-      return { processed: true };
+      return processIngestionJob(job);
     },
     { connection: redis, concurrency: 5 }
   );

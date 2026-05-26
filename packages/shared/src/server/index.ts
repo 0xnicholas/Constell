@@ -9,3 +9,15 @@ export type {
 } from "./queues.js";
 
 export { getClickHouseClient, pingClickHouse } from "./clickhouse/client.js";
+
+export { validateEvents, crossValidateTraceReferences } from "./ingestion/validation.js";
+export { enrichEvents } from "./ingestion/enrichment.js";
+export { ingestionBatchSchema, ingestionEventSchema } from "./ingestion/schemas.js";
+export type {
+  IngestionEvent,
+  EventBody,
+  EventType,
+  ProcessingFailure,
+  TraceCreateBody,
+  ObservationCreateBody,
+} from "./ingestion/types.js";
