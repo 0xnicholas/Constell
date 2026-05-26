@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
 import { validateApiKey } from "~/features/public-api/server/apiKeyAuth";
+import { checkRateLimit } from "~/features/public-api/server/rateLimit";
 import { BaseError } from "@constell/shared";
 import { queueNames, type IngestionJob, ingestionBatchSchema } from "@constell/shared/src/server";
 
@@ -32,6 +33,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { projectId, apiKeyId } = await validateApiKey(req.headers.authorization);
+
+    const rateLimit = await checkRateLimit(`ingestion:${projectId}:${apiKeyId}`);
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        error: "RATE_LIMITED",
+        message: "Too many requests",
+        retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
+      });
+    }
 
     const parsed = ingestionBatchSchema.safeParse(req.body);
     if (!parsed.success) {
