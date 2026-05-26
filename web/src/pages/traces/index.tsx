@@ -1,25 +1,29 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { TraceTable } from "~/features/traces/components/TraceTable";
+import { useActiveProject } from "~/features/projects/hooks/useActiveProject";
 
 export default function TracesPage() {
-  const router = useRouter();
-  const { projectId } = router.query as { projectId?: string };
+  const { projectId, isLoading: projectLoading } = useActiveProject();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [offset, setOffset] = useState(0);
   const limit = 50;
 
-  const effectiveProjectId = projectId || "dev-project";
+  const { data, isLoading } = api.traces.list.useQuery(
+    {
+      projectId: projectId || undefined,
+      from: from || undefined,
+      to: to || undefined,
+      limit,
+      offset,
+    },
+    { enabled: !!projectId }
+  );
 
-  const { data, isLoading } = api.traces.list.useQuery({
-    projectId: effectiveProjectId,
-    from: from || undefined,
-    to: to || undefined,
-    limit,
-    offset,
-  });
+  if (projectLoading || isLoading) return <div className="p-6">Loading…</div>;
+  if (!projectId)
+    return <div className="p-6">No project selected. Please log in or provide ?projectId=</div>;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -43,11 +47,9 @@ export default function TracesPage() {
           Refresh
         </button>
       </div>
-      {isLoading ? (
-        <p>Loading…</p>
-      ) : data?.traces?.length ? (
+      {data?.traces?.length ? (
         <>
-          <TraceTable traces={data.traces} projectId={effectiveProjectId} />
+          <TraceTable traces={data.traces} projectId={projectId} />
           <div className="flex gap-2 mt-4">
             <button
               disabled={offset === 0}
