@@ -7,6 +7,7 @@ export const queueNames = {
   ingestion: "ingestion-queue",
   blobStorage: "blobstorage-queue",
   promptCache: "prompt-cache-queue",
+  export: "export-queue",
 } as const;
 
 export type QueueName = (typeof queueNames)[keyof typeof queueNames];
@@ -36,8 +37,18 @@ export interface PromptCacheJob {
   action: "invalidate" | "warm";
 }
 
+export interface ExportJob {
+  projectId: string;
+  from: string;
+  to: string;
+  format: "jsonl" | "csv";
+  scope: "traces" | "observations";
+  requestedBy: { userId?: string; apiKeyId?: string };
+}
+
 export type QueueJobMap = {
   [queueNames.ingestion]: IngestionJob;
   [queueNames.blobStorage]: BlobStorageJob;
   [queueNames.promptCache]: PromptCacheJob;
+  [queueNames.export]: ExportJob;
 };
