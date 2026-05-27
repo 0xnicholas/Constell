@@ -212,6 +212,8 @@ async function writeToPostgres(
         version?: string;
         sessionId?: string;
         userId?: string;
+        promptName?: string;
+        promptVersion?: string;
       };
 
       const cost = body.model
@@ -238,6 +240,8 @@ async function writeToPostgres(
           statusMessage: body.statusMessage ?? null,
           metadata: body.metadata ?? undefined,
           parentObservationId: body.parentObservationId ?? null,
+          promptName: body.promptName ?? null,
+          promptVersion: body.promptVersion ?? null,
           createdAt: event._enriched.eventTs,
           updatedAt: event._enriched.eventTs,
         },
@@ -330,6 +334,8 @@ async function writeToClickHouse(
           version?: string;
           sessionId?: string;
           userId?: string;
+          promptName?: string;
+          promptVersion?: string;
         };
 
         const cost = body.model
@@ -362,6 +368,8 @@ async function writeToClickHouse(
           user_id: body.userId ?? null,
           metadata: body.metadata ? JSON.stringify(body.metadata) : "{}",
           parent_observation_id: body.parentObservationId ?? null,
+          prompt_name: body.promptName ?? null,
+          prompt_version: body.promptVersion ?? null,
           event_ts: event._enriched.eventTs.toISOString(),
           ingested_at: now.toISOString(),
         });
