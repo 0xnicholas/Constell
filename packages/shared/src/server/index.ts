@@ -5,6 +5,7 @@ export type {
   IngestionJob,
   BlobStorageJob,
   PromptCacheJob,
+  ExportJob,
   QueueJobMap,
 } from "./queues.js";
 
