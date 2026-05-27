@@ -13,6 +13,19 @@ export const traceCreateBodySchema = z.object({
   timestamp: z.string().datetime().optional(),
 });
 
+export const scoreCreateBodySchema = z.object({
+  id: z.string().min(1).optional(),
+  traceId: z.string().min(1),
+  observationId: z.string().optional(),
+  name: z.string().min(1),
+  value: z.number().optional(),
+  stringValue: z.string().optional(),
+  dataType: z.enum(["NUMERIC", "BOOLEAN", "CATEGORICAL"]).optional(),
+  source: z.enum(["API", "UI", "EVAL"]).optional(),
+  comment: z.string().optional(),
+  timestamp: z.string().datetime().optional(),
+});
+
 export const observationCreateBodySchema = z.object({
   id: z.string().min(1),
   traceId: z.string().min(1),
@@ -47,9 +60,9 @@ export const observationCreateBodySchema = z.object({
 
 export const ingestionEventSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["trace-create", "observation-create"]),
+  type: z.enum(["trace-create", "observation-create", "score-create"]),
   timestamp: z.string().datetime(),
-  body: z.union([observationCreateBodySchema, traceCreateBodySchema]),
+  body: z.union([observationCreateBodySchema, traceCreateBodySchema, scoreCreateBodySchema]),
 });
 
 export const ingestionBatchSchema = z.object({

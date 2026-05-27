@@ -1,6 +1,6 @@
 import { BatchQueue, type QueuedEvent } from "./batchQueue";
 import { getPrompt } from "./promptClient";
-import type { TraceInput, ObservationInput, Prompt } from "./types";
+import type { TraceInput, ObservationInput, ScoreInput, Prompt } from "./types";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -85,6 +85,27 @@ export class ConstellClient {
 
   generation(input: Omit<ObservationInput, "type">) {
     return this.observation({ ...input, type: "GENERATION" });
+  }
+
+  score(input: ScoreInput) {
+    const id = generateId();
+    const event: QueuedEvent = {
+      id: `evt-${id}`,
+      type: "score-create",
+      timestamp: new Date().toISOString(),
+      body: {
+        id,
+        traceId: input.traceId,
+        observationId: input.observationId,
+        name: input.name,
+        value: input.value,
+        stringValue: input.stringValue,
+        dataType: input.dataType,
+        comment: input.comment,
+      },
+    };
+    this.queue.enqueue(event);
+    return id;
   }
 
   async getPrompt(name: string, label?: string): Promise<Prompt> {

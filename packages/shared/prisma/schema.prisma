@@ -82,6 +82,8 @@ model Project {
   apiKeys        ApiKey[]
   traces         Trace[]
   prompts        Prompt[]
+  scoreConfigs   ScoreConfig[]
+  scores         Score[]
   createdAt      DateTime     @default(now())
 }
 
@@ -123,6 +125,7 @@ model Trace {
   latencyMs   Int?
 
   observations Observation[]
+  scores       Score[]
 
   @@unique([projectId, externalId])
   @@index([projectId, createdAt])
@@ -154,6 +157,7 @@ model Observation {
   promptVersion       String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+  scores              Score[]
 
   @@index([projectId, traceId])
   @@index([projectId, createdAt])
@@ -206,4 +210,65 @@ model PromptVersionLabel {
   promptVersion   PromptVersion @relation(fields: [promptVersionId], references: [id], onDelete: Cascade)
 
   @@unique([promptVersionId, label])
+}
+
+// ─── Score Management ───
+enum ScoreDataType {
+  NUMERIC
+  BOOLEAN
+  CATEGORICAL
+}
+
+enum ScoreSource {
+  API
+  UI
+  EVAL
+}
+
+model ScoreConfig {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  projectId   String   @map("project_id")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name        String
+  dataType    ScoreDataType @map("data_type")
+  description String?
+  minValue    Float?   @map("min_value")
+  maxValue    Float?   @map("max_value")
+
+  scores      Score[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("score_configs")
+}
+
+model Score {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  projectId     String   @map("project_id")
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  traceId       String   @map("trace_id")
+  trace         Trace    @relation(fields: [traceId], references: [id], onDelete: Cascade)
+  observationId String?  @map("observation_id")
+  observation   Observation? @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  name          String
+  configId      String?  @map("config_id")
+  config        ScoreConfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
+
+  value         Float
+  stringValue   String?  @map("string_value")
+  source        ScoreSource
+  comment       String?
+
+  @@index([projectId, traceId])
+  @@index([projectId, observationId])
+  @@index([projectId, name])
+  @@index([createdAt])
+  @@map("scores")
 }

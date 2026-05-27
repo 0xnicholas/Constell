@@ -265,6 +265,63 @@ async function writeToPostgres(
     }
   }
 
+  // Phase 3: Create scores
+  for (const event of events) {
+    if (event.type !== "score-create") continue;
+    try {
+      const body = event.body as {
+        id?: string;
+        traceId: string;
+        observationId?: string;
+        name: string;
+        value?: number;
+        stringValue?: string;
+        dataType?: string;
+        source?: string;
+        comment?: string;
+      };
+
+      // Resolve configId from projectId + name
+      const config = await prisma.scoreConfig.findUnique({
+        where: { projectId_name: { projectId, name: body.name } },
+      });
+
+      let value = body.value ?? 0;
+      if (body.dataType === "BOOLEAN" || config?.dataType === "BOOLEAN") {
+        value = value ? 1 : 0;
+      }
+
+      // Ensure consistent ID between PG and CH phases
+      if (!body.id) {
+        body.id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+
+      await prisma.score.create({
+        data: {
+          id: body.id,
+          projectId,
+          traceId: body.traceId,
+          observationId: body.observationId ?? null,
+          name: body.name,
+          configId: config?.id ?? null,
+          value,
+          stringValue: body.stringValue ?? null,
+          source: (body.source as "API" | "UI" | "EVAL") ?? "API",
+          comment: body.comment ?? null,
+          createdAt: event._enriched.eventTs,
+          updatedAt: event._enriched.eventTs,
+        },
+      });
+    } catch (err) {
+      failures.push({
+        eventId: event.id,
+        eventType: event.type,
+        reason: err instanceof Error ? err.message : String(err),
+        code: "PG_ERROR",
+      });
+    }
+  }
+
   return failures;
 }
 
@@ -309,6 +366,35 @@ async function writeToClickHouse(
           has_error: agg.hasError,
           created_at: event._enriched.eventTs.toISOString(),
           updated_at: event._enriched.eventTs.toISOString(),
+          event_ts: event._enriched.eventTs.toISOString(),
+          ingested_at: now.toISOString(),
+        });
+      } else if (event.type === "score-create") {
+        const body = event.body as {
+          id?: string;
+          traceId: string;
+          observationId?: string;
+          name: string;
+          value?: number;
+          stringValue?: string;
+          dataType?: string;
+          source?: string;
+          comment?: string;
+        };
+
+        writer.addScore({
+          id: body.id ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          project_id: projectId,
+          trace_id: body.traceId,
+          observation_id: body.observationId ?? null,
+          name: body.name,
+          config_id: null,
+          value: body.value ?? 0,
+          string_value: body.stringValue ?? null,
+          data_type: body.dataType ?? "NUMERIC",
+          source: body.source ?? "API",
+          comment: body.comment ?? null,
+          created_at: event._enriched.eventTs.toISOString(),
           event_ts: event._enriched.eventTs.toISOString(),
           ingested_at: now.toISOString(),
         });

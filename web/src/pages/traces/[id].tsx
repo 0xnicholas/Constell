@@ -3,6 +3,7 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 import { SpanTree } from "~/features/traces/components/SpanTree";
 import { useActiveProject } from "~/features/projects/hooks/useActiveProject";
+import { ScoreCard } from "~/features/scores/components/ScoreCard";
 
 export default function TraceDetailPage() {
   const router = useRouter();
@@ -10,6 +11,11 @@ export default function TraceDetailPage() {
   const { projectId, isLoading: projectLoading } = useActiveProject();
 
   const { data, isLoading } = api.traces.detail.useQuery(
+    { projectId: projectId || "", traceId: id || "" },
+    { enabled: !!id && !!projectId }
+  );
+
+  const scoresQuery = api.scores.list.useQuery(
     { projectId: projectId || "", traceId: id || "" },
     { enabled: !!id && !!projectId }
   );
@@ -53,6 +59,18 @@ export default function TraceDetailPage() {
           <pre className="text-xs overflow-x-auto">{JSON.stringify(trace.metadata, null, 2)}</pre>
         </div>
       </div>
+
+      <ScoreCard
+        scores={
+          scoresQuery.data?.scores.map((s) => ({
+            name: s.name,
+            dataType: s.dataType,
+            value: s.value,
+            stringValue: s.stringValue,
+            source: s.source,
+          })) ?? []
+        }
+      />
 
       <h2 className="text-lg font-semibold mb-2">Observations</h2>
       {trace.observations.length > 0 ? (

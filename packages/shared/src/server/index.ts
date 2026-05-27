@@ -21,6 +21,7 @@ export type {
   ProcessingFailure,
   TraceCreateBody,
   ObservationCreateBody,
+  ScoreCreateBody,
 } from "./ingestion/types.js";
 
 export { getPromptFromCache, setPromptInCache, invalidatePromptCache } from "./promptCache.js";

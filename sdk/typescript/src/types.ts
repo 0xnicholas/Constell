@@ -41,6 +41,16 @@ export interface ObservationInput {
   userId?: string;
 }
 
+export interface ScoreInput {
+  traceId: string;
+  observationId?: string;
+  name: string;
+  value?: number;
+  stringValue?: string;
+  dataType?: "NUMERIC" | "BOOLEAN" | "CATEGORICAL";
+  comment?: string;
+}
+
 export interface Prompt {
   content: string;
   config: Record<string, unknown> | null;

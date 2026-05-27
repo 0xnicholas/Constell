@@ -51,7 +51,7 @@ export function crossValidateTraceReferences(
   const allTraceIds = new Set([...existingTraceIds, ...batchTraceIds]);
 
   for (const event of events) {
-    if (event.type === "observation-create") {
+    if (event.type === "observation-create" || event.type === "score-create") {
       const body = event.body as { traceId: string };
       if (!allTraceIds.has(body.traceId)) {
         invalid.push({

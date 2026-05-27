@@ -18,6 +18,23 @@ export interface ClickHouseTraceRow {
   ingested_at: string;
 }
 
+export interface ClickHouseScoreRow {
+  id: string;
+  project_id: string;
+  trace_id: string;
+  observation_id: string | null;
+  name: string;
+  config_id: string | null;
+  value: number;
+  string_value: string | null;
+  data_type: string;
+  source: string;
+  comment: string | null;
+  created_at: string;
+  event_ts: string;
+  ingested_at: string;
+}
+
 export interface ClickHouseObservationRow {
   id: string;
   trace_id: string;
@@ -53,6 +70,7 @@ export interface ClickHouseObservationRow {
 export class ClickHouseBatchWriter {
   private traces: ClickHouseTraceRow[] = [];
   private observations: ClickHouseObservationRow[] = [];
+  private scores: ClickHouseScoreRow[] = [];
 
   addTrace(row: ClickHouseTraceRow): void {
     this.traces.push(row);
@@ -62,9 +80,14 @@ export class ClickHouseBatchWriter {
     this.observations.push(row);
   }
 
+  addScore(row: ClickHouseScoreRow): void {
+    this.scores.push(row);
+  }
+
   async flush(): Promise<{
     traceCount: number;
     observationCount: number;
+    scoreCount: number;
   }> {
     const client = getClickHouseClient();
     let traceCount = 0;
@@ -90,6 +113,17 @@ export class ClickHouseBatchWriter {
       this.observations = [];
     }
 
-    return { traceCount, observationCount };
+    let scoreCount = 0;
+    if (this.scores.length > 0) {
+      await client.insert({
+        table: "scores_wide",
+        values: this.scores,
+        format: "JSONEachRow",
+      });
+      scoreCount = this.scores.length;
+      this.scores = [];
+    }
+
+    return { traceCount, observationCount, scoreCount };
   }
 }

@@ -5,14 +5,25 @@ import { KpiCard } from "../features/dashboard/components/KpiCard";
 import { TrendChart } from "../features/dashboard/components/TrendChart";
 import { ModelTable } from "../features/dashboard/components/ModelTable";
 import { EmptyState } from "../features/dashboard/components/EmptyState";
+import { ScoreKpiCard } from "../features/dashboard/components/ScoreKpiCard";
+import { ScoreTrendChart } from "../features/dashboard/components/ScoreTrendChart";
 
 export default function DashboardPage() {
   const { preset, setPreset, from, to } = useDateRange();
   const [granularity, setGranularity] = useState<"hour" | "day" | undefined>(undefined);
+  const [selectedScoreName, setSelectedScoreName] = useState<string | undefined>(undefined);
 
   const summaryQuery = api.metrics.summary.useQuery({ from, to });
   const trendsQuery = api.metrics.trends.useQuery({ from, to, granularity });
   const modelQuery = api.metrics.modelBreakdown.useQuery({ from, to });
+
+  const configsQuery = api.scores.configList.useQuery({});
+  const scoreAnalyticsQuery = api.scores.analytics.useQuery(
+    { name: selectedScoreName ?? "" },
+    { enabled: !!selectedScoreName }
+  );
+
+  const numericConfigs = configsQuery.data?.filter((c) => c.dataType === "NUMERIC") ?? [];
 
   const hasData = summaryQuery.data && summaryQuery.data.traceCount > 0;
 
@@ -59,6 +70,47 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {numericConfigs.length > 0 && (
+            <>
+              <div className="mb-2 text-sm font-medium text-gray-700">Score Metrics</div>
+              <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <ScoreKpiCard
+                  label={`Avg ${numericConfigs[0]?.name ?? ""}`}
+                  value={
+                    scoreAnalyticsQuery.data?.average !== null
+                      ? (scoreAnalyticsQuery.data?.average ?? 0).toFixed(2)
+                      : "—"
+                  }
+                />
+                <ScoreKpiCard
+                  label="Score Count"
+                  value={scoreAnalyticsQuery.data?.count.toLocaleString() ?? "—"}
+                />
+              </div>
+
+              <div className="mb-6">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Score Trend:</span>
+                  <select
+                    value={selectedScoreName ?? ""}
+                    onChange={(e) => setSelectedScoreName(e.target.value || undefined)}
+                    className="rounded border px-2 py-1 text-sm"
+                  >
+                    <option value="">Select dimension…</option>
+                    {numericConfigs.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedScoreName && (
+                  <ScoreTrendChart data={[]} label={`${selectedScoreName} (7d)`} />
+                )}
+              </div>
+            </>
+          )}
 
           <div className="mb-6">
             <TrendChart

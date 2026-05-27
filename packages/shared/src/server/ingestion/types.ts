@@ -1,4 +1,4 @@
-export type EventType = "trace-create" | "observation-create";
+export type EventType = "trace-create" | "observation-create" | "score-create";
 
 export interface IngestionEvent {
   id: string;
@@ -7,7 +7,7 @@ export interface IngestionEvent {
   body: EventBody;
 }
 
-export type EventBody = TraceCreateBody | ObservationCreateBody;
+export type EventBody = TraceCreateBody | ObservationCreateBody | ScoreCreateBody;
 
 export interface TraceCreateBody {
   id: string;
@@ -48,6 +48,19 @@ export interface ObservationCreateBody {
   version?: string;
   sessionId?: string;
   userId?: string;
+}
+
+export interface ScoreCreateBody {
+  id?: string;
+  traceId: string;
+  observationId?: string;
+  name: string;
+  value?: number;
+  stringValue?: string;
+  dataType?: "NUMERIC" | "BOOLEAN" | "CATEGORICAL";
+  source?: "API" | "UI" | "EVAL";
+  comment?: string;
+  timestamp?: string;
 }
 
 export interface ProcessingFailure {

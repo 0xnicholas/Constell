@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Any
 from ._batch_queue import BatchQueue
 from .prompt_client import get_prompt
-from .types import Trace, Observation, Usage, Prompt
+from .types import Trace, Observation, Usage, Score, Prompt
 
 
 class ConstellClient:
@@ -106,6 +106,24 @@ class ConstellClient:
             **kwargs,
         )
         self.observation(obs)
+
+    def score(self, score: Score) -> None:
+        import uuid
+        event = {
+            "id": f"evt-{uuid.uuid4()}",
+            "type": "score-create",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "body": {
+                "traceId": score.trace_id,
+                "observationId": score.observation_id,
+                "name": score.name,
+                "value": score.value,
+                "stringValue": score.string_value,
+                "dataType": score.data_type,
+                "comment": score.comment,
+            },
+        }
+        self._queue.enqueue(event)
 
     def get_prompt(self, name: str, label: str = "latest") -> Prompt:
         return get_prompt(self._base_url, self._public_key, self._secret_key, name, label)

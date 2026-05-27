@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0-beta] - 2026-05-27
+
+### Added
+
+- **Scores (Lightweight Scoring System)**
+  - Score config CRUD (`ScoreConfig` Prisma model): name, dataType (NUMERIC/BOOLEAN/CATEGORICAL), min/max
+  - Score CRUD (`Score` Prisma model): attach to trace/observation, value/stringValue, source (API/UI/EVAL)
+  - Ingestion pipeline `score-create` event type: validates trace existence, writes to PG + CH
+  - tRPC `scores` router: `configList`, `configCreate`, `configUpdate`, `configDelete`, `list`, `create`, `update`, `delete`, `analytics`
+  - Public REST API: `/api/public/scores`, `/api/public/scores/:id`, `/api/public/score-configs`
+  - Score list page (`/scores`) with pagination
+  - Score config page (`/scores/configs`) with create/delete
+  - Trace detail enhancement: ScoreCards showing attached scores
+  - Dashboard enhancement: Score KPIs and dimension selector
+  - TypeScript SDK: `client.score()` method
+  - Python SDK: `client.score()` method
+  - ClickHouse `scores_wide` table for query-time analytics
+
 ## [0.5.0-beta] - 2026-05-27
 
 ### Added

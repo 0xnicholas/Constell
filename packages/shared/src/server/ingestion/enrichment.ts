@@ -37,6 +37,10 @@ function parseTimestamp(event: IngestionEvent): Date {
     const body = event.body as { startTime?: string };
     if (body.startTime) return new Date(body.startTime);
   }
+  if (event.type === "score-create") {
+    const body = event.body as { timestamp?: string };
+    if (body.timestamp) return new Date(body.timestamp);
+  }
   return new Date(event.timestamp);
 }
 

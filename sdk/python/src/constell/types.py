@@ -52,6 +52,17 @@ class Trace:
 
 
 @dataclass
+class Score:
+    trace_id: str
+    name: str
+    value: float | None = None
+    string_value: str | None = None
+    data_type: Literal["NUMERIC", "BOOLEAN", "CATEGORICAL"] | None = None
+    observation_id: str | None = None
+    comment: str | None = None
+
+
+@dataclass
 class Prompt:
     content: str
     config: dict[str, Any] | None
