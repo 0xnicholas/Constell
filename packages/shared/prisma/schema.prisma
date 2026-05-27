@@ -84,6 +84,8 @@ model Project {
   prompts        Prompt[]
   scoreConfigs   ScoreConfig[]
   scores         Score[]
+  evalTemplates  EvalTemplate[]
+  evalRuns       EvalRun[]
   createdAt      DateTime     @default(now())
 }
 
@@ -271,4 +273,61 @@ model Score {
   @@index([projectId, name])
   @@index([createdAt])
   @@map("scores")
+}
+
+// ─── Evaluations ───
+enum EvalRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model EvalTemplate {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  projectId     String   @map("project_id")
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+  prompt        String   @db.Text
+  outputSchema  Json?    @map("output_schema")
+  scoreName     String   @map("score_name")
+  scoreDataType ScoreDataType @map("score_data_type")
+  model         String   @default("gpt-4o-mini")
+  temperature   Float?   @default(0.0)
+
+  evalRuns      EvalRun[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("eval_templates")
+}
+
+model EvalRun {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+  projectId       String   @map("project_id")
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  templateId      String   @map("template_id")
+  template        EvalTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  status          EvalRunStatus @default(PENDING)
+  from            DateTime? @map("from_date")
+  to              DateTime? @map("to_date")
+  traceCount      Int?      @map("trace_count")
+  processedCount  Int?      @map("processed_count")
+  scoreCount      Int?      @map("score_count")
+  averageScore    Float?    @map("average_score")
+  errorMessage    String?   @map("error_message") @db.Text
+  jobId           String?   @map("job_id")
+
+  @@index([projectId, templateId])
+  @@index([status])
+  @@map("eval_runs")
 }

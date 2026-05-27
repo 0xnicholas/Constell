@@ -4,6 +4,7 @@ import { queueNames, type QueueJobMap } from "@constell/shared/src/server";
 import { processIngestionJob } from "./ingestionProcessor.js";
 import { processPromptCacheJob } from "./promptCacheWorker.js";
 import { processExportJob } from "./exportProcessor.js";
+import { processEvalJob } from "./evalProcessor.js";
 
 export interface WorkerManager {
   workers: Worker[];
@@ -64,6 +65,16 @@ export function createBullMQWorkers(): WorkerManager {
     }
   );
   workers.push(exportWorker);
+
+  const evalWorker = new Worker<QueueJobMap[(typeof queueNames)["eval"]]>(
+    queueNames.eval,
+    async (job) => {
+      console.log(`[eval] Processing job ${job.id}`, job.data.projectId, job.data.templateId);
+      return processEvalJob(job);
+    },
+    { connection: redis, concurrency: 1 }
+  );
+  workers.push(evalWorker);
 
   return { workers, redis };
 }

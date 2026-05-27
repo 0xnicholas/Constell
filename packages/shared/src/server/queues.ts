@@ -8,6 +8,7 @@ export const queueNames = {
   blobStorage: "blobstorage-queue",
   promptCache: "prompt-cache-queue",
   export: "export-queue",
+  eval: "eval-queue",
 } as const;
 
 export type QueueName = (typeof queueNames)[keyof typeof queueNames];
@@ -46,9 +47,18 @@ export interface ExportJob {
   requestedBy: { userId?: string; apiKeyId?: string };
 }
 
+export interface EvalJob {
+  projectId: string;
+  templateId: string;
+  runId: string;
+  from?: string;
+  to?: string;
+}
+
 export type QueueJobMap = {
   [queueNames.ingestion]: IngestionJob;
   [queueNames.blobStorage]: BlobStorageJob;
   [queueNames.promptCache]: PromptCacheJob;
   [queueNames.export]: ExportJob;
+  [queueNames.eval]: EvalJob;
 };

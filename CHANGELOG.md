@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta] - 2026-05-27
+
+### Added
+
+- **Evaluations (LLM-as-a-Judge Pipeline)**
+  - EvalTemplate Prisma model: prompt template, output schema, score mapping, model config
+  - EvalRun Prisma model: status tracking (PENDING/RUNNING/COMPLETED/FAILED/CANCELLED), progress, summary
+  - Worker `evalProcessor`: fetches traces from ClickHouse, calls LLM API, parses structured output, writes EVAL scores
+  - LLM API client: OpenAI-compatible chat completions via native fetch
+  - Output parser: JSON path extraction with markdown code block support, number/boolean/string fallbacks
+  - tRPC `evals` router: `templateList`, `templateCreate`, `templateDelete`, `runList`, `runCreate`, `runDetail`, `runCancel`
+  - Eval queue: `eval-queue` (BullMQ) with `EvalJob` contract
+  - `/evals/templates` page: CRUD for eval templates with prompt variable hints
+  - `/evals/runs` page: create runs with template/time-range selection, list with status/progress
+  - `/evals/runs/[id]` page: run detail with error inspection and score link
+  - Eval scores write to existing `Score` model with `source=EVAL` (immutable, reuse all score infrastructure)
+
 ## [0.6.0-beta] - 2026-05-27
 
 ### Added
