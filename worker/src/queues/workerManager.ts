@@ -3,6 +3,7 @@ import Redis from "ioredis";
 import { queueNames, type QueueJobMap } from "@constell/shared/src/server";
 import { processIngestionJob } from "./ingestionProcessor.js";
 import { processPromptCacheJob } from "./promptCacheWorker.js";
+import { processExportJob } from "./exportProcessor.js";
 
 export interface WorkerManager {
   workers: Worker[];
@@ -48,6 +49,21 @@ export function createBullMQWorkers(): WorkerManager {
     { connection: redis, concurrency: 2 }
   );
   workers.push(promptCacheWorker);
+
+  const exportWorker = new Worker<QueueJobMap[(typeof queueNames)["export"]]>(
+    queueNames.export,
+    async (job) => {
+      console.log(`[export] Processing job ${job.id}`, job.data.projectId, job.data.scope);
+      return processExportJob(job);
+    },
+    {
+      connection: redis,
+      concurrency: 2,
+      removeOnComplete: { count: 1000 },
+      removeOnFail: { count: 500 },
+    }
+  );
+  workers.push(exportWorker);
 
   return { workers, redis };
 }
