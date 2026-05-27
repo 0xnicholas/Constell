@@ -44,6 +44,8 @@ export interface ClickHouseObservationRow {
   user_id: string | null;
   metadata: string;
   parent_observation_id: string | null;
+  prompt_name?: string | null;
+  prompt_version?: string | null;
   event_ts: string;
   ingested_at: string;
 }
