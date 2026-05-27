@@ -2,7 +2,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 from ._batch_queue import BatchQueue
-from .types import Trace, Observation, Usage
+from .prompt_client import get_prompt
+from .types import Trace, Observation, Usage, Prompt
 
 
 class ConstellClient:
@@ -13,6 +14,9 @@ class ConstellClient:
         secret_key: str,
         flush_interval: float = 5.0,
     ):
+        self._base_url = base_url
+        self._public_key = public_key
+        self._secret_key = secret_key
         self._queue = BatchQueue(
             base_url=base_url,
             public_key=public_key,
@@ -102,6 +106,9 @@ class ConstellClient:
             **kwargs,
         )
         self.observation(obs)
+
+    def get_prompt(self, name: str, label: str = "latest") -> Prompt:
+        return get_prompt(self._base_url, self._public_key, self._secret_key, name, label)
 
     def flush(self) -> None:
         self._queue.flush_and_stop()

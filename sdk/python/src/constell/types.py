@@ -49,3 +49,10 @@ class Trace:
     tags: list[str] = field(default_factory=list)
     public: bool = False
     timestamp: datetime | None = None
+
+
+@dataclass
+class Prompt:
+    content: str
+    config: dict[str, Any] | None
+    version: int
