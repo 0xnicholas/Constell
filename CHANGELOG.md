@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0-beta] - 2026-05-27
+
+### Added
+
+- **Metrics & Analytics**
+  - Metrics dashboard (`/dashboard`) with KPI cards, cost trends (CSS bar chart), and model breakdown table
+  - tRPC `metrics` router: `summary` (KPI cards), `trends` (time series with auto granularity), `modelBreakdown` (per-model usage), `export` (async batch export)
+  - Empty-range handling: `metrics.summary` returns all zeros (no `NaN`) via `zeroSummary()`
+  - Trends auto-granularity: `hour` for ≤48h ranges, `day` otherwise; rejects explicit granularities producing >90 buckets with `400`
+  - Async batch export pipeline via dedicated `export-queue` (BullMQ)
+  - Worker `exportProcessor`: streams ClickHouse rows, transforms to JSONL/CSV, uploads to S3/MinIO
+  - Worker `exportWriter`: presigned S3 URLs with 24h TTL via `@aws-sdk/s3-request-presigner`
+  - Redis backup for completed exports (`export-result:{jobId}`, 24h TTL) to survive BullMQ retention cleanup
+  - REST endpoint `GET /api/public/exports/:jobId` — dual auth (session or API key), returns `404` for cross-project access (enumeration-safe)
+  - `metrics.export` returns `503` when `CONSTELL_S3_BATCH_EXPORT_ENABLED` is not `true`
+  - ModelPrice seed script (`packages/shared/prisma/seed/modelPrices.ts`) with 6 common LLMs (gpt-4o, claude-3.5-sonnet, gemini-1.5-pro, etc.)
+  - Server unit tests: `zeroSummary` returns all zeros; `metrics.export` throws 503 when S3 disabled
+
 ## [0.4.0-alpha] - 2026-05-27
 
 ### Added
