@@ -21,3 +21,6 @@ export type {
   TraceCreateBody,
   ObservationCreateBody,
 } from "./ingestion/types.js";
+
+export { getPromptFromCache, setPromptInCache, invalidatePromptCache } from "./promptCache.js";
+export type { CachedPrompt } from "./promptCache.js";

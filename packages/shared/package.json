@@ -46,7 +46,9 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^22.15.0",
+    "ioredis": "^5.10.1",
     "prisma": "^6.6.0",
     "typescript": "^5.8.0",
     "vitest": "^4.1.7"

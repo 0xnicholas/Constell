@@ -69,12 +69,27 @@ importers:
       "@types/bcryptjs":
         specifier: ^3.0.0
         version: 3.0.0
+      "@types/ioredis":
+        specifier: ^5.0.0
+        version: 5.0.0
       "@types/node":
         specifier: ^22.15.0
         version: 22.19.19
+      ioredis:
+        specifier: ^5.10.1
+        version: 5.10.1
       prisma:
         specifier: ^6.6.0
         version: 6.19.3(typescript@5.9.3)
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.7
+        version: 4.1.7(@types/node@22.19.19)(vite@8.0.14(@types/node@22.19.19)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.3)(yaml@2.9.0))
+
+  sdk/typescript:
+    devDependencies:
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -1404,6 +1419,13 @@ packages:
       {
         integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==,
       }
+
+  "@types/ioredis@5.0.0":
+    resolution:
+      {
+        integrity: sha512-zJbJ3FVE17CNl5KXzdeSPtdltc4tMT3TzC6fxQS0sQngkbFZ6h+0uTafsRqu+eSLIugf6Yb0Ea0SUuRr42Nk9g==,
+      }
+    deprecated: This is a stub types definition. ioredis provides its own type definitions, so you do not need this installed.
 
   "@types/json-schema@7.0.15":
     resolution:
@@ -5446,6 +5468,12 @@ snapshots:
       "@types/serve-static": 2.2.0
 
   "@types/http-errors@2.0.5": {}
+
+  "@types/ioredis@5.0.0":
+    dependencies:
+      ioredis: 5.10.1
+    transitivePeerDependencies:
+      - supports-color
 
   "@types/json-schema@7.0.15": {}
 
