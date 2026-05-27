@@ -40,3 +40,9 @@ export interface ObservationInput {
   sessionId?: string;
   userId?: string;
 }
+
+export interface Prompt {
+  content: string;
+  config: Record<string, unknown> | null;
+  version: number;
+}

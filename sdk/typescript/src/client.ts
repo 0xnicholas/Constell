@@ -1,5 +1,6 @@
 import { BatchQueue, type QueuedEvent } from "./batchQueue";
-import type { TraceInput, ObservationInput } from "./types";
+import { getPrompt } from "./promptClient";
+import type { TraceInput, ObservationInput, Prompt } from "./types";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -7,6 +8,9 @@ function generateId(): string {
 
 export class ConstellClient {
   private queue: BatchQueue;
+  private baseUrl: string;
+  private publicKey: string;
+  private secretKey: string;
 
   constructor(opts: {
     baseUrl: string;
@@ -14,6 +18,9 @@ export class ConstellClient {
     secretKey: string;
     flushIntervalMs?: number;
   }) {
+    this.baseUrl = opts.baseUrl;
+    this.publicKey = opts.publicKey;
+    this.secretKey = opts.secretKey;
     this.queue = new BatchQueue(opts.baseUrl, opts.publicKey, opts.secretKey, opts.flushIntervalMs);
     this.queue.start();
   }
@@ -78,6 +85,10 @@ export class ConstellClient {
 
   generation(input: Omit<ObservationInput, "type">) {
     return this.observation({ ...input, type: "GENERATION" });
+  }
+
+  async getPrompt(name: string, label?: string): Promise<Prompt> {
+    return getPrompt(this.baseUrl, this.publicKey, this.secretKey, name, label);
   }
 
   async flush() {

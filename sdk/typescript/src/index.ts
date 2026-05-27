@@ -1,2 +1,2 @@
 export { ConstellClient } from "./client";
-export type { TraceInput, ObservationInput, Usage } from "./types";
+export type { TraceInput, ObservationInput, Usage, Prompt } from "./types";
