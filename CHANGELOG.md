@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-alpha] - 2026-05-27
+
+### Added
+
+- **Prompt Management**
+  - Prisma migration: `promptName` and `promptVersion` fields on `Observation` model
+  - ClickHouse migration: `prompt_name` and `prompt_version` columns on `observations_wide`
+  - Redis prompt cache layer (`packages/shared/src/server/promptCache.ts`) with 60s TTL
+  - tRPC `prompts` router: `list`, `create`, `detail`, `createVersion`, `setLabel`, `getByLabel` (cache-aware)
+  - Prompt list page (`/prompts`) with create form
+  - Prompt editor page (`/prompts/[name]`) with version history and label management
+  - Public API: `GET /api/public/prompts/:name?version=...` and `POST /api/public/prompts`
+  - Worker prompt cache consumer for cache invalidation via `prompt-cache-queue`
+  - TypeScript SDK: `client.getPrompt(name, label?)`
+  - Python SDK: `client.get_prompt(name, label="latest")`
+  - Ingestion pipeline auto-linkage: `observation-create` accepts `promptName`/`promptVersion`, worker writes to PG + CH
+
 ## [0.3.0-alpha] - 2026-05-26
 
 ### Added
