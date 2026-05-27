@@ -41,6 +41,8 @@ export const observationCreateBodySchema = z.object({
   version: z.string().optional(),
   sessionId: z.string().optional(),
   userId: z.string().optional(),
+  promptName: z.string().optional(),
+  promptVersion: z.string().optional(),
 });
 
 export const ingestionEventSchema = z.object({
