@@ -1,6 +1,6 @@
 {
   "name": "@constell/sdk",
-  "version": "0.3.0-alpha",
+  "version": "0.8.0-beta",
   "description": "Constell TypeScript SDK for LLM observability",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@constell/ee",
-  "version": "0.1.0-alpha",
+  "version": "0.8.0-beta",
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
