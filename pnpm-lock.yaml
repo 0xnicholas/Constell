@@ -154,6 +154,9 @@ importers:
         specifier: ^3.25.0
         version: 3.25.76
     devDependencies:
+      "@prisma/client":
+        specifier: ^6.19.3
+        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       "@types/node":
         specifier: ^22.15.0
         version: 22.19.19
