@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import Redis from "ioredis";
 import { queueNames, type QueueJobMap } from "@constell/shared/src/server";
 import { processIngestionJob } from "./ingestionProcessor.js";
+import { processPromptCacheJob } from "./promptCacheWorker.js";
 
 export interface WorkerManager {
   workers: Worker[];
@@ -37,6 +38,16 @@ export function createBullMQWorkers(): WorkerManager {
     { connection: redis, concurrency: 2 }
   );
   workers.push(blobWorker);
+
+  const promptCacheWorker = new Worker<QueueJobMap[(typeof queueNames)["promptCache"]]>(
+    queueNames.promptCache,
+    async (job) => {
+      console.log(`[prompt-cache] Processing job ${job.id}`, job.data.promptName, job.data.action);
+      return processPromptCacheJob(job, redis);
+    },
+    { connection: redis, concurrency: 2 }
+  );
+  workers.push(promptCacheWorker);
 
   return { workers, redis };
 }
