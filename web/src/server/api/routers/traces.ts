@@ -27,6 +27,9 @@ export const tracesRouter = createTRPCRouter({
         to: z.string().optional(),
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
+        scoreName: z.string().optional(),
+        scoreMin: z.number().optional(),
+        scoreMax: z.number().optional(),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -38,12 +41,38 @@ export const tracesRouter = createTRPCRouter({
         });
       }
 
+      // If score filters provided, resolve matching trace IDs from PG first
+      let traceIdFilter: string[] | undefined;
+      if (input.scoreName) {
+        const scoreWhere: Record<string, unknown> = {
+          projectId: resolvedProjectId,
+          name: input.scoreName,
+        };
+        if (input.scoreMin !== undefined || input.scoreMax !== undefined) {
+          const valueFilter: Record<string, unknown> = {};
+          if (input.scoreMin !== undefined) valueFilter.gte = input.scoreMin;
+          if (input.scoreMax !== undefined) valueFilter.lte = input.scoreMax;
+          scoreWhere.value = valueFilter;
+        }
+        const matchingScores = await prisma.score.findMany({
+          where: scoreWhere,
+          select: { traceId: true },
+          distinct: ["traceId"],
+        });
+        traceIdFilter = matchingScores.map((s) => s.traceId);
+        if (traceIdFilter.length === 0) {
+          return { traces: [], limit: input.limit, offset: input.offset };
+        }
+      }
+
       const ch = getClickHouseClient();
       const { from, to, limit, offset } = input;
 
       const conditions = [`project_id = {projectId: String}`];
       if (from) conditions.push(`created_at >= {from: String}`);
       if (to) conditions.push(`created_at <= {to: String}`);
+      if (traceIdFilter)
+        conditions.push(`id IN (${traceIdFilter.map((id) => `'${id}'`).join(",")})`);
       const where = conditions.join(" AND ");
 
       const query = `

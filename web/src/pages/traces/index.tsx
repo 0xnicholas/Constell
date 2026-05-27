@@ -8,6 +8,9 @@ export default function TracesPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [offset, setOffset] = useState(0);
+  const [scoreName, setScoreName] = useState("");
+  const [scoreMin, setScoreMin] = useState("");
+  const [scoreMax, setScoreMax] = useState("");
   const limit = 50;
 
   const { data, isLoading } = api.traces.list.useQuery(
@@ -17,9 +20,15 @@ export default function TracesPage() {
       to: to || undefined,
       limit,
       offset,
+      scoreName: scoreName || undefined,
+      scoreMin: scoreMin !== "" ? Number(scoreMin) : undefined,
+      scoreMax: scoreMax !== "" ? Number(scoreMax) : undefined,
     },
     { enabled: !!projectId }
   );
+
+  const configsQuery = api.scores.configList.useQuery({}, { enabled: !!projectId });
+  const numericConfigs = configsQuery.data?.filter((c) => c.dataType === "NUMERIC") ?? [];
 
   if (projectLoading || isLoading) return <div className="p-6">Loading…</div>;
   if (!projectId)
@@ -28,7 +37,7 @@ export default function TracesPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Traces</h1>
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="datetime-local"
           value={from}
@@ -43,9 +52,59 @@ export default function TracesPage() {
           className="border px-2 py-1 rounded"
           placeholder="To"
         />
-        <button onClick={() => setOffset(0)} className="bg-blue-600 text-white px-4 py-1 rounded">
+        <select
+          value={scoreName}
+          onChange={(e) => setScoreName(e.target.value)}
+          className="border px-2 py-1 rounded text-sm"
+        >
+          <option value="">Filter by score…</option>
+          {numericConfigs.map((c) => (
+            <option key={c.id} value={c.name}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {scoreName && (
+          <>
+            <input
+              type="number"
+              placeholder="Min"
+              value={scoreMin}
+              onChange={(e) => setScoreMin(e.target.value)}
+              className="border px-2 py-1 rounded w-20"
+            />
+            <input
+              type="number"
+              placeholder="Max"
+              value={scoreMax}
+              onChange={(e) => setScoreMax(e.target.value)}
+              className="border px-2 py-1 rounded w-20"
+            />
+          </>
+        )}
+        <button
+          onClick={() => {
+            setOffset(0);
+          }}
+          className="bg-blue-600 text-white px-4 py-1 rounded"
+        >
           Refresh
         </button>
+        {(scoreName || from || to) && (
+          <button
+            onClick={() => {
+              setFrom("");
+              setTo("");
+              setScoreName("");
+              setScoreMin("");
+              setScoreMax("");
+              setOffset(0);
+            }}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1"
+          >
+            Clear
+          </button>
+        )}
       </div>
       {data?.traces?.length ? (
         <>

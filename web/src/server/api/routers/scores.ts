@@ -373,4 +373,51 @@ export const scoresRouter = createTRPCRouter({
         })),
       };
     }),
+
+  trends: authedProcedure
+    .input(
+      z.object({
+        projectId: z.string().optional(),
+        name: z.string(),
+        from: z.string().optional(),
+        to: z.string().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const projectId = ctx.projectId ?? input.projectId;
+      if (!projectId) throw new TRPCError({ code: "BAD_REQUEST", message: "projectId required" });
+
+      const range = getDefaultRange();
+      const from = input.from ?? range.from;
+      const to = input.to ?? range.to;
+      assertRangeValid(from, to);
+
+      const ch = getClickHouseClient();
+      const query = `
+        SELECT
+          toStartOfDay(created_at) AS bucket,
+          avg(value) AS average
+        FROM scores_wide FINAL
+        WHERE project_id = {projectId: String}
+          AND name = {name: String}
+          AND created_at >= {from: String}
+          AND created_at <= {to: String}
+        GROUP BY bucket
+        ORDER BY bucket ASC
+      `;
+      const resultSet = await ch.query({
+        query,
+        query_params: { projectId, name: input.name, from, to },
+        format: "JSONEachRow",
+      });
+      const rows = (await resultSet.json()) as Array<{
+        bucket: string;
+        average: string;
+      }>;
+
+      return rows.map((r) => ({
+        bucket: r.bucket,
+        average: Number(r.average) || 0,
+      }));
+    }),
 });

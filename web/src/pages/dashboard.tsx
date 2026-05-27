@@ -22,6 +22,10 @@ export default function DashboardPage() {
     { name: selectedScoreName ?? "" },
     { enabled: !!selectedScoreName }
   );
+  const scoreTrendsQuery = api.scores.trends.useQuery(
+    { name: selectedScoreName ?? "" },
+    { enabled: !!selectedScoreName }
+  );
 
   const numericConfigs = configsQuery.data?.filter((c) => c.dataType === "NUMERIC") ?? [];
 
@@ -106,7 +110,10 @@ export default function DashboardPage() {
                   </select>
                 </div>
                 {selectedScoreName && (
-                  <ScoreTrendChart data={[]} label={`${selectedScoreName} (7d)`} />
+                  <ScoreTrendChart
+                    data={scoreTrendsQuery.data ?? []}
+                    label={`${selectedScoreName} (7d)`}
+                  />
                 )}
               </div>
             </>
