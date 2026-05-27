@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0-beta] - 2026-05-27
+
+### Added
+
+- **Annotation Queues (Team Manual Labeling)**
+  - AnnotationQueue Prisma model: named queues linked to ScoreConfig
+  - AnnotationQueueItem Prisma model: trace items with status (PENDING/ASSIGNED/ANNOTATED/REVIEWED)
+  - ScoreSource enum extended with ANNOTATION
+  - tRPC `annotations` router: queueList/queueCreate/queueDelete/queuePopulate, itemList/itemAssign/itemAnnotate/itemReview, myAssignments, queueStats
+  - RBAC: itemAssign/itemReview require ADMIN/OWNER role via membership check
+  - `/annotations/queues` page: queue CRUD with item counts
+  - `/annotations/queues/[id]` page: queue detail with stats bar, item table with bulk assign
+  - `/annotations/work` page: annotator workbench showing trace detail + score input panel
+  - Annotation creates Score record with `source=ANNOTATION`, reusable across all score infrastructure
+  - Review flow: approve → REVIEWED, reject → back to ASSIGNED with score deleted
+
 ## [0.7.0-beta] - 2026-05-27
 
 ### Added
