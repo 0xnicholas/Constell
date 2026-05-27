@@ -42,3 +42,9 @@ constell_*/
 
 # Worktrees
 .worktrees/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
