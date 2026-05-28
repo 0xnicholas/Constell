@@ -149,6 +149,22 @@ export default function NewRunPage() {
                   </option>
                 ))}
               </select>
+              {selectedPrompt && (
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700">Prompt Version</label>
+                  <select
+                    value={promptVersion}
+                    onChange={(e) => setPromptVersion(Number(e.target.value))}
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                  >
+                    {(selectedPrompt as any).versions?.map((v: { id: string; version: number }) => (
+                      <option key={v.id} value={v.version}>
+                        v{v.version}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Model</label>

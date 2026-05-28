@@ -136,6 +136,19 @@ export const datasetRunsRouter = createTRPCRouter({
       const projectId = ctx.projectId ?? input.projectId;
       if (!projectId) throw new TRPCError({ code: "BAD_REQUEST", message: "projectId required" });
 
+      // Fetch current state to avoid race: only cancel if still cancellable
+      const run = await prisma.datasetRun.findUnique({
+        where: { id: input.id, projectId },
+        select: { status: true },
+      });
+      if (!run) throw new TRPCError({ code: "NOT_FOUND", message: "Run not found" });
+      if (run.status !== "PENDING" && run.status !== "RUNNING") {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Cannot cancel run in status: ${run.status}`,
+        });
+      }
+
       const job = await datasetRunQueue.getJob(input.id);
       if (job) {
         await job.remove();

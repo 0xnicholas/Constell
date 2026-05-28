@@ -3,6 +3,7 @@ import { type EvalJob } from "@constell/shared/src/server";
 import { prisma } from "@constell/shared/src/db";
 import { getClickHouseClient } from "@constell/shared/src/server";
 import { callLlm } from "@constell/shared/src/server";
+import { renderEvalPrompt, parseEvalOutput } from "../services/evalHelpers.js";
 
 export async function processEvalJob(job: Job<EvalJob>): Promise<void> {
   const { projectId, templateId, runId, from, to } = job.data;
@@ -65,13 +66,16 @@ export async function processEvalJob(job: Job<EvalJob>): Promise<void> {
 
     for (const trace of traces) {
       try {
-        const prompt = renderPrompt(run.template.prompt, trace);
+        const prompt = renderEvalPrompt(run.template.prompt, {
+          input: String(trace.input ?? ""),
+          output: String(trace.output ?? ""),
+        });
         const llmRes = await callLlm({
           model: run.template.model,
           messages: [{ role: "user", content: prompt }],
           modelParams: { temperature: run.template.temperature ?? 0 },
         });
-        const parsed = parseOutput(llmRes.content, run.template.outputSchema);
+        const parsed = parseEvalOutput(llmRes.content, run.template.outputSchema);
 
         if (parsed !== null) {
           let value = 0;
@@ -139,42 +143,5 @@ export async function processEvalJob(job: Job<EvalJob>): Promise<void> {
       },
     });
     throw err;
-  }
-}
-
-function renderPrompt(template: string, trace: Record<string, unknown>): string {
-  return template
-    .replace(/\{trace\.input\}/g, String(trace.input ?? ""))
-    .replace(/\{trace\.output\}/g, String(trace.output ?? ""))
-    .replace(/\{trace\.name\}/g, String(trace.name ?? ""))
-    .replace(/\{trace\.user_id\}/g, String(trace.user_id ?? ""))
-    .replace(/\{trace\.metadata\}/g, String(trace.metadata ?? ""));
-}
-
-function parseOutput(content: string, schema: unknown): unknown {
-  if (!schema) return content;
-  const s = schema as { type?: string; path?: string };
-  if (!s.path) return content;
-
-  // Try to extract JSON from markdown code blocks
-  let jsonStr = content;
-  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlockMatch) jsonStr = codeBlockMatch[1];
-
-  try {
-    const obj = JSON.parse(jsonStr);
-    const parts = s.path.split(".");
-    let val: unknown = obj;
-    for (const part of parts) {
-      val = (val as Record<string, unknown>)?.[part];
-    }
-    return val;
-  } catch {
-    // Fallback: try to parse the whole content as a number/boolean
-    const num = Number(content.trim());
-    if (!Number.isNaN(num)) return num;
-    if (content.trim().toLowerCase() === "true") return true;
-    if (content.trim().toLowerCase() === "false") return false;
-    return content.trim();
   }
 }

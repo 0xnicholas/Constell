@@ -11,9 +11,9 @@ export class DatasetClient {
   private secretKey: string;
 
   constructor(client: ConstellClient) {
-    this.baseUrl = (client as any).baseUrl;
-    this.publicKey = (client as any).publicKey;
-    this.secretKey = (client as any).secretKey;
+    this.baseUrl = client.baseUrl;
+    this.publicKey = client.publicKey;
+    this.secretKey = client.secretKey;
   }
 
   async create(params: {
@@ -69,9 +69,9 @@ export class DatasetItemClient {
   private secretKey: string;
 
   constructor(client: ConstellClient) {
-    this.baseUrl = (client as any).baseUrl;
-    this.publicKey = (client as any).publicKey;
-    this.secretKey = (client as any).secretKey;
+    this.baseUrl = client.baseUrl;
+    this.publicKey = client.publicKey;
+    this.secretKey = client.secretKey;
   }
 
   async create(params: {
@@ -137,9 +137,9 @@ export class DatasetRunClient {
   private secretKey: string;
 
   constructor(client: ConstellClient) {
-    this.baseUrl = (client as any).baseUrl;
-    this.publicKey = (client as any).publicKey;
-    this.secretKey = (client as any).secretKey;
+    this.baseUrl = client.baseUrl;
+    this.publicKey = client.publicKey;
+    this.secretKey = client.secretKey;
   }
 
   async create(params: {

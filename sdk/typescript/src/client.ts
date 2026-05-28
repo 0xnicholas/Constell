@@ -9,9 +9,9 @@ function generateId(): string {
 
 export class ConstellClient {
   private queue: BatchQueue;
-  private baseUrl: string;
-  private publicKey: string;
-  private secretKey: string;
+  readonly baseUrl: string;
+  readonly publicKey: string;
+  readonly secretKey: string;
 
   dataset: DatasetClient;
   datasetItem: DatasetItemClient;
