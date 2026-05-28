@@ -2,7 +2,7 @@ import { type Job } from "bullmq";
 import { type EvalJob } from "@constell/shared/src/server";
 import { prisma } from "@constell/shared/src/db";
 import { getClickHouseClient } from "@constell/shared/src/server";
-import { callLlm } from "../services/llmClient.js";
+import { callLlm } from "@constell/shared/src/server";
 
 export async function processEvalJob(job: Job<EvalJob>): Promise<void> {
   const { projectId, templateId, runId, from, to } = job.data;
@@ -66,7 +66,11 @@ export async function processEvalJob(job: Job<EvalJob>): Promise<void> {
     for (const trace of traces) {
       try {
         const prompt = renderPrompt(run.template.prompt, trace);
-        const llmRes = await callLlm(run.template.model, prompt, run.template.temperature ?? 0);
+        const llmRes = await callLlm({
+          model: run.template.model,
+          messages: [{ role: "user", content: prompt }],
+          modelParams: { temperature: run.template.temperature ?? 0 },
+        });
         const parsed = parseOutput(llmRes.content, run.template.outputSchema);
 
         if (parsed !== null) {

@@ -9,6 +9,7 @@ export const queueNames = {
   promptCache: "prompt-cache-queue",
   export: "export-queue",
   eval: "eval-queue",
+  datasetRun: "dataset-run-queue",
 } as const;
 
 export type QueueName = (typeof queueNames)[keyof typeof queueNames];
@@ -55,10 +56,22 @@ export interface EvalJob {
   to?: string;
 }
 
+export interface DatasetRunJob {
+  projectId: string;
+  datasetId: string;
+  datasetRunId: string;
+  promptId?: string;
+  promptVersion?: number;
+  model: string;
+  modelParams?: Record<string, unknown>;
+  evalTemplateIds: string[];
+}
+
 export type QueueJobMap = {
   [queueNames.ingestion]: IngestionJob;
   [queueNames.blobStorage]: BlobStorageJob;
   [queueNames.promptCache]: PromptCacheJob;
   [queueNames.export]: ExportJob;
   [queueNames.eval]: EvalJob;
+  [queueNames.datasetRun]: DatasetRunJob;
 };

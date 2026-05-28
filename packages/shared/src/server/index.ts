@@ -25,5 +25,8 @@ export type {
   ScoreCreateBody,
 } from "./ingestion/types.js";
 
+export { callLlm } from "./llm/client.js";
+export type { LlmCallParams, LlmCallResult } from "./llm/client.js";
+
 export { getPromptFromCache, setPromptInCache, invalidatePromptCache } from "./promptCache.js";
 export type { CachedPrompt } from "./promptCache.js";
