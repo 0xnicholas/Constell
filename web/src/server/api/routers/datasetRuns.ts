@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { authedProcedure, createTRPCRouter } from "../trpc";
@@ -104,7 +103,7 @@ export const datasetRunsRouter = createTRPCRouter({
             name: input.name,
             description: input.description,
             status: "PENDING",
-            metadata: { ...execParams, presetId: input.presetId } as Prisma.InputJsonValue,
+            metadata: { ...execParams, presetId: input.presetId } as never,
           },
         });
 
