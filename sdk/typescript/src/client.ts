@@ -1,5 +1,6 @@
 import { BatchQueue, type QueuedEvent } from "./batchQueue";
 import { getPrompt } from "./promptClient";
+import { DatasetClient, DatasetItemClient, DatasetRunClient } from "./datasetClient";
 import type { TraceInput, ObservationInput, ScoreInput, Prompt } from "./types";
 
 function generateId(): string {
@@ -12,6 +13,10 @@ export class ConstellClient {
   private publicKey: string;
   private secretKey: string;
 
+  dataset: DatasetClient;
+  datasetItem: DatasetItemClient;
+  datasetRun: DatasetRunClient;
+
   constructor(opts: {
     baseUrl: string;
     publicKey: string;
@@ -23,6 +28,10 @@ export class ConstellClient {
     this.secretKey = opts.secretKey;
     this.queue = new BatchQueue(opts.baseUrl, opts.publicKey, opts.secretKey, opts.flushIntervalMs);
     this.queue.start();
+
+    this.dataset = new DatasetClient(this);
+    this.datasetItem = new DatasetItemClient(this);
+    this.datasetRun = new DatasetRunClient(this);
   }
 
   trace(input: TraceInput) {
