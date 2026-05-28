@@ -5,6 +5,7 @@ import { processIngestionJob } from "./ingestionProcessor.js";
 import { processPromptCacheJob } from "./promptCacheWorker.js";
 import { processExportJob } from "./exportProcessor.js";
 import { processEvalJob } from "./evalProcessor.js";
+import { processExperimentJob } from "./experimentProcessor.js";
 
 export interface WorkerManager {
   workers: Worker[];
@@ -75,6 +76,16 @@ export function createBullMQWorkers(): WorkerManager {
     { connection: redis, concurrency: 1 }
   );
   workers.push(evalWorker);
+
+  const datasetRunWorker = new Worker<QueueJobMap[(typeof queueNames)["datasetRun"]]>(
+    queueNames.datasetRun,
+    async (job) => {
+      console.log(`[dataset-run] Processing job ${job.id}`, job.data.datasetRunId);
+      return processExperimentJob(job);
+    },
+    { connection: redis, concurrency: 1 }
+  );
+  workers.push(datasetRunWorker);
 
   return { workers, redis };
 }

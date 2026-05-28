@@ -7,6 +7,7 @@ export type {
   PromptCacheJob,
   ExportJob,
   EvalJob,
+  DatasetRunJob,
   QueueJobMap,
 } from "./queues.js";
 
